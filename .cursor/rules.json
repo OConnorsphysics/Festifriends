@@ -1,0 +1,66 @@
+{
+    "description": "Festifriends project rules for AI code assistance in Cursor",
+    "rules": [
+      {
+        "title": "Respect Full Project Context",
+        "description": "All code suggestions must consider the full codebase context, imports, and architecture. No standalone or generic code unless explicitly requested."
+      },
+      {
+        "title": "Kivy Application Architecture",
+        "description": "Ensure class-based screen definitions are preserved, use Kivy widgets appropriately, and maintain app flow logic (e.g., screen transitions, App.current_user usage)."
+      },
+      {
+        "title": "Avoid Placeholder or Incompatible Code",
+        "description": "All code must be runnable within the current mobile-oriented project. Avoid unverified packages or modules not compatible with Buildozer."
+      },
+      {
+        "title": "Respect Known Dependency Versions",
+        "description": "Use: plyer==2.0.0, protobuf==3.17.3, python3.10. Stick to confirmed working versions unless version update is part of the request."
+      },
+      {
+        "title": "Formatting Style",
+        "description": "Use 4 spaces for indentation. Limit line length to 100 characters. Use snake_case for variables and functions. Classes use PascalCase. Leave 1 blank line between functions."
+      },
+      {
+        "title": "KV File Usage",
+        "description": "Prefer Python-based UI when possible, but if KV is used, maintain naming consistency between KV `id` references and Python class variables. Avoid placing logic in KV files."
+      },
+      {
+        "title": "Camera, GPS, and Device Features",
+        "description": "When using Plyer or device features, always verify platform support. Wrap hardware usage in try/except blocks and check platform compatibility before execution."
+      },
+      {
+        "title": "Only Suggest Code When Relevant",
+        "description": "Only provide edits for explicitly selected code or discussed files/functions. Avoid refactoring unrelated code or suggesting speculative changes."
+      },
+      {
+        "title": "Basic Test Coverage Expectations",
+        "description": "For logic-heavy functions, suggest testable methods and include example test functions when requested. Prioritize business logic over UI for test coverage."
+      },
+      {
+        "title": "Comment and Explain Code",
+        "description": "Provide inline comments for all new or modified logic. Write explanations for changes especially if logic is complex or beginner-facing."
+      },
+      {
+        "title": "Comprehensive Error Handling and Logging",
+        "description": "Replace all print() statements with proper logging. Implement try/except blocks for all file operations, database queries, and external API calls. Use structured error messages and handle edge cases gracefully. Never leave debug print statements in production code."
+      },
+      {
+        "title": "Database and State Management",
+        "description": "Implement proper data persistence patterns. Avoid global variables for user state - use App.current_user consistently. Ensure database operations are atomic and handle concurrent access. Validate all user inputs before database operations."
+      },
+      {
+        "title": "Code Quality and Maintenance",
+        "description": "Remove all TODO comments by implementing proper solutions. Use type hints for function parameters and return values. Implement proper validation for user inputs (email format, coordinate ranges, etc.). Follow DRY principles and avoid code duplication."
+      },
+      {
+        "title": "User Experience and Input Validation",
+        "description": "Implement comprehensive input validation for all user inputs (coordinates, usernames, emails). Provide clear error messages to users. Handle edge cases like empty inputs, invalid formats, and boundary conditions. Use proper UI feedback for all user actions."
+      },
+      {
+        "title": "Security and Data Protection",
+        "description": "Never store passwords in plain text. Implement proper password hashing. Validate and sanitize all user inputs to prevent injection attacks. Use secure methods for storing sensitive data. Implement proper session management and user authentication flows."
+      }
+    ]
+  }
+  

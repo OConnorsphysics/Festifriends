@@ -1,0 +1,7 @@
+cp ~/Festifriends/build_log.txt /media/sf_Festifriends
+
+moves build log onto shared folder on laptop
+
+buildozer android debug > build_log.txt 2>&1
+
+creates the app and build log
