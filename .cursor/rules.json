@@ -1,45 +1,47 @@
 {
     "description": "Festifriends project rules for AI code assistance in Cursor",
+    "project_context": "Festifriends is a mobile application built with Kivy and Python that allows users to create groups with friends for location sharing at large events, festivals, concerts, and raves. Core features include building squads, marking meetup locations, sharing individual locations, festival maps with event locations, event schedule pages, and safety features. The most important features are user logins, user databases, realtime mobile location sharing, database management, event maps, real world location to pixel coordinate conversions, group creation, and group management.",
+    "development_environment": "Development occurs on Windows with testing/deployment on Ubuntu VM via Oracle VirtualBox. Buildozer is used for Android packaging. All code must be compatible with this cross-platform setup.",
     "rules": [
       {
         "title": "Respect Full Project Context",
-        "description": "All code suggestions must consider the full codebase context, imports, and architecture. No standalone or generic code unless explicitly requested."
+        "description": "All code suggestions must consider the full codebase context, imports, and architecture. No standalone or generic code unless explicitly requested. Focus on the core Festifriends features: location sharing, squad management, event maps, and user authentication."
       },
       {
         "title": "Kivy Application Architecture",
-        "description": "Ensure class-based screen definitions are preserved, use Kivy widgets appropriately, and maintain app flow logic (e.g., screen transitions, App.current_user usage)."
+        "description": "Ensure class-based screen definitions are preserved, use Kivy widgets appropriately, and maintain app flow logic (e.g., screen transitions, App.current_user usage). Follow Kivy best practices for mobile app development."
       },
       {
         "title": "Avoid Placeholder or Incompatible Code",
-        "description": "All code must be runnable within the current mobile-oriented project. Avoid unverified packages or modules not compatible with Buildozer."
+        "description": "All code must be runnable within the current mobile-oriented project. Avoid unverified packages or modules not compatible with Buildozer. Ensure all dependencies work on Android deployment."
       },
       {
         "title": "Respect Known Dependency Versions",
-        "description": "Use: plyer==2.0.0, protobuf==3.17.3, python3.10. Stick to confirmed working versions unless version update is part of the request."
+        "description": "Use: plyer==2.0.0, protobuf==3.17.3, python3.10. Stick to confirmed working versions unless version update is part of the request. Verify compatibility with Buildozer before suggesting new dependencies."
       },
       {
         "title": "Formatting Style",
-        "description": "Use 4 spaces for indentation. Limit line length to 100 characters. Use snake_case for variables and functions. Classes use PascalCase. Leave 1 blank line between functions."
+        "description": "Use 4 spaces for indentation. Limit line length to 100 characters. Use snake_case for variables and functions. Classes use PascalCase. Leave 1 blank line between functions. Follow PEP 8 guidelines."
       },
       {
         "title": "KV File Usage",
-        "description": "Prefer Python-based UI when possible, but if KV is used, maintain naming consistency between KV `id` references and Python class variables. Avoid placing logic in KV files."
+        "description": "Prefer Python-based UI when possible, but if KV is used, maintain naming consistency between KV `id` references and Python class variables. Avoid placing logic in KV files. Keep UI and logic separation clean."
       },
       {
         "title": "Camera, GPS, and Device Features",
-        "description": "When using Plyer or device features, always verify platform support. Wrap hardware usage in try/except blocks and check platform compatibility before execution."
+        "description": "When using Plyer or device features, always verify platform support. Wrap hardware usage in try/except blocks and check platform compatibility before execution. Handle Android-specific permissions properly."
       },
       {
         "title": "Only Suggest Code When Relevant",
-        "description": "Only provide edits for explicitly selected code or discussed files/functions. Avoid refactoring unrelated code or suggesting speculative changes."
+        "description": "Only provide edits for explicitly selected code or discussed files/functions. Avoid refactoring unrelated code or suggesting speculative changes. Focus on the specific task requested."
       },
       {
         "title": "Basic Test Coverage Expectations",
-        "description": "For logic-heavy functions, suggest testable methods and include example test functions when requested. Prioritize business logic over UI for test coverage."
+        "description": "For logic-heavy functions, suggest testable methods and include example test functions when requested. Prioritize business logic over UI for test coverage. Focus on core functionality testing."
       },
       {
         "title": "Comment and Explain Code",
-        "description": "Provide inline comments for all new or modified logic. Write explanations for changes especially if logic is complex or beginner-facing."
+        "description": "Provide inline comments for all new or modified logic. Write explanations for changes especially if logic is complex or beginner-facing. Document complex algorithms and business logic clearly."
       },
       {
         "title": "Comprehensive Error Handling and Logging",
@@ -60,7 +62,27 @@
       {
         "title": "Security and Data Protection",
         "description": "Never store passwords in plain text. Implement proper password hashing. Validate and sanitize all user inputs to prevent injection attacks. Use secure methods for storing sensitive data. Implement proper session management and user authentication flows."
+      },
+      {
+        "title": "Cross-Platform Compatibility",
+        "description": "All code must work on both Windows (development) and Ubuntu VM (testing). Use os.path.join() for file paths, avoid Windows-specific paths or commands. Use platform-agnostic libraries and avoid OS-specific dependencies. Test file operations work in both environments."
+      },
+      {
+        "title": "Buildozer and Android Compatibility",
+        "description": "All dependencies must be Buildozer-compatible. Avoid packages requiring compilation or native extensions unless verified. Use pure Python libraries when possible. Test all imports work in Ubuntu environment. Follow Buildozer requirements.txt format for dependencies."
+      },
+      {
+        "title": "Virtual Machine Considerations",
+        "description": "Avoid code that requires specific hardware acceleration or GPU features that may not work in VirtualBox. Use software rendering fallbacks. Avoid memory-intensive operations that could exceed VM limits. Test performance in constrained VM environment."
+      },
+      {
+        "title": "File System and Path Handling",
+        "description": "Use relative paths and avoid absolute paths. Handle file separators correctly for cross-platform compatibility. Use pathlib or os.path for all file operations. Ensure database files and assets are accessible in both Windows and Ubuntu environments."
+      },
+      {
+        "title": "Development Environment Isolation",
+        "description": "Avoid hardcoded paths to Windows-specific locations. Use environment variables or relative paths for configuration. Ensure all dependencies are properly specified in requirements.txt. Test that code runs without modification in Ubuntu VM."
       }
     ]
-  }
+}
   
