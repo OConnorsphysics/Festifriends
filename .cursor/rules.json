@@ -82,6 +82,58 @@
       {
         "title": "Development Environment Isolation",
         "description": "Avoid hardcoded paths to Windows-specific locations. Use environment variables or relative paths for configuration. Ensure all dependencies are properly specified in requirements.txt. Test that code runs without modification in Ubuntu VM."
+      },
+      {
+        "title": "Systematic UI Updates",
+        "description": "When making UI changes (button sizes, layouts, styling), systematically update ALL related screens and components. Do not apply changes to only some screens while leaving others inconsistent. Always verify the scope of changes across the entire application and ensure consistency. When in doubt, ask for clarification on which screens need updates."
+      },
+      {
+        "title": "Linter Error Management",
+        "description": "Ignore Kivy-specific linter errors (like 'bind' attribute unknown) as these are false positives from the linter not understanding Kivy's dynamic attribute system. Focus on actual runtime errors and logical issues instead of linter warnings for Kivy widgets. Document known linter limitations in project README."
+      },
+      {
+        "title": "Image Asset Management",
+        "description": "Use PNG format for icons when transparency is needed. Provide fallback rendering for all image assets (like red circles for failed pin images). Standardize icon sizes (32x32 pixels for consistency). Validate image files before adding to database. Handle missing or corrupted image files gracefully."
+      },
+      {
+        "title": "Database Schema Evolution",
+        "description": "Version database schemas - add version field to track format changes. Maintain backward compatibility - always handle missing fields gracefully. Create migration scripts to update old database formats. Document schema changes in commit messages. Validate data integrity after schema changes."
+      },
+      {
+        "title": "Error Handling Patterns",
+        "description": "Implement consistent error handling - always catch exceptions and provide meaningful error messages. Use graceful degradation - fallback to default values when resources are missing. Provide user feedback - show appropriate error messages to users (not just console prints). Use proper logging instead of print statements for debugging."
+      },
+      {
+        "title": "Resource Loading",
+        "description": "Validate resources before loading - check if files exist before trying to load them. Provide default resources - always have fallback resources available. Use relative paths consistently. Organize assets in dedicated folders for different asset types. Handle resource loading failures gracefully."
+      },
+      {
+        "title": "UI Component Consistency",
+        "description": "Use standardized button sizes - consistent size_hint values (e.g., (1, 0.08) for buttons). Maintain consistent spacing - uniform padding and spacing values. Define standard font sizes for different UI elements. Use consistent color scheme variables throughout the app. Ensure visual consistency across all screens."
+      },
+      {
+        "title": "State Management",
+        "description": "Use centralized state management - app-level properties for shared state. Always validate state - check if objects exist before accessing their properties. Implement state persistence - save important state to prevent loss on screen transitions. Ensure proper initialization order - avoid NoneType errors."
+      },
+      {
+        "title": "Code Organization",
+        "description": "Maintain separation of concerns - keep UI logic separate from business logic. Use screen lifecycle methods - on_enter() for dynamic content loading. Create modular components - break large screens into smaller, reusable components. Use consistent naming conventions across all files. Keep functions focused and single-purpose."
+      },
+      {
+        "title": "Testing Strategy",
+        "description": "Create manual testing checklists for new features. Maintain test data management - test databases with known good data. Validate features end-to-end before considering them complete. Perform regression testing - ensure new features don't break existing functionality. Test cross-platform compatibility."
+      },
+      {
+        "title": "Documentation Standards",
+        "description": "Add inline documentation - docstrings to all new functions. Document database schema changes. Keep setup and deployment instructions current. Maintain list of known issues and workarounds. Document complex algorithms and business logic clearly."
+      },
+      {
+        "title": "Performance Considerations",
+        "description": "Implement caching for frequently accessed data. Use lazy loading - load data only when needed. Perform efficient updates - update only changed data instead of reloading everything. Practice proper memory management - clean up resources properly. Avoid unnecessary database queries and file operations."
+      },
+      {
+        "title": "Security Practices",
+        "description": "Always validate user inputs before processing. Implement proper access control - check user permissions before allowing actions. Sanitize data before storing in databases. Avoid exposing sensitive information in error messages. Use secure methods for storing and transmitting data."
       }
     ]
 }

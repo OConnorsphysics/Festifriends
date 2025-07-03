@@ -1,0 +1,18 @@
+user_username;friend_username;date_added
+loc;Dix;2024-01-01
+loc;Jane;2024-01-01
+loc;Tom;2024-01-01
+Dix;loc;2024-01-01
+Dix;Tom;2024-01-01
+Jane;loc;2024-01-01
+Jane;Tom;2024-01-01
+Tom;Jane;2024-01-01
+Tom;loc;2024-01-01
+Tom;Jade;2024-01-01
+Jade;Tom;2024-01-01
+Jade;Ray;2024-01-01
+Ray;Jade;2024-01-01
+Ray;Torin;2024-01-01
+Torin;Ray;2024-01-01
+Torin;Derek;2024-01-01
+Derek;Torin;2024-01-01 loc;Ray;2025-07-02

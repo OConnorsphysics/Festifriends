@@ -1,4 +1,3 @@
-
 # Import necessary modules
 import kivy
 import time
@@ -25,6 +24,8 @@ from kivy.uix.spinner import Spinner
 from screens.profile_screen import ProfileScreen
 from screens.group_screen import GroupsScreen
 from screens.map_screen import MapScreen
+from screens.admin_screen import AdminScreen
+from screens.friends_screen import FriendsScreen
 from kivy.uix.screenmanager import FadeTransition
 from user_classes import User, Squad
 from Utilities.Notifications import send_notification  # Adjust path as needed
@@ -59,49 +60,44 @@ class LoginScreen(Screen):
         super().__init__(**kwargs)
         #global current_user #define current user as a variable in the class and make globally accesible, might eb bad practice
 
-        # Create a grid layout with two rows and one column
-        layout = GridLayout(cols=1)
+        # Main layout
+        main_layout = BoxLayout(orientation='vertical', padding=30, spacing=20)
+        main_layout.size_hint = (0.9, 0.9)
+        main_layout.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
 
-        # Create a label for the app name
-        label = Label(text="Location Sharing App", font_size='20sp')
+        # App name label
+        label = Label(text="Location Sharing App", font_size='24sp', size_hint=(1, 0.15))
+        main_layout.add_widget(label)
 
-        # Create a text input for username
-        self.username = TextInput(hint_text="Username", multiline=False)
+        # Username and password fields
+        self.username = TextInput(hint_text="Username", multiline=False, size_hint=(1, 0.12))
+        self.password = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(1, 0.12))
+        main_layout.add_widget(self.username)
+        main_layout.add_widget(self.password)
 
-        # Create a text input for password
-        self.password = TextInput(hint_text="Password", password=True, multiline=False)
-
-        # Create a login button
-        login_btn = Button(text="Login", size_hint=(None, None), size=(150, 50), background_color=buttonColor)
+        # Button row (login, signup, forgot) - much smaller buttons
+        button_row = GridLayout(cols=3, size_hint=(1, 0.08), spacing=10)
+        login_btn = Button(text="Login", background_color=buttonColor, size_hint=(1, 1), font_size='12sp')
         login_btn.bind(on_press=self.login)
-
-        # Create a sign up button
-        signup_btn = Button(text="Sign Up", size_hint=(None, None), size=(150, 50), background_color=buttonColor)
+        signup_btn = Button(text="Sign Up", background_color=buttonColor, size_hint=(1, 1), font_size='12sp')
         signup_btn.bind(on_press=self.signup)
-
-        # forgot password button
-        forgot_btn = Button(text="Forgot Password?", size_hint=(None, None), size=(150, 50),
-                            background_color=buttonColor)
+        forgot_btn = Button(text="Forgot Password?", background_color=buttonColor, size_hint=(1, 1), font_size='12sp')
         forgot_btn.bind(on_press=self.forgot)
+        button_row.add_widget(login_btn)
+        button_row.add_widget(signup_btn)
+        button_row.add_widget(forgot_btn)
+        main_layout.add_widget(button_row)
 
-        # Add all widgets to the layout
-        layout.add_widget(label)
-        layout.add_widget(self.username)
-        layout.add_widget(self.password)
-        layout.add_widget(login_btn)
-        layout.add_widget(signup_btn)
-        layout.add_widget(forgot_btn)
-
-        # Add the layout to the login screen
-        self.add_widget(layout)
+        # Center everything
+        container = BoxLayout(orientation='vertical')
+        container.add_widget(main_layout)
+        self.add_widget(container)
 
     # Function to handle login button press
-
-
     def login(self, instance):
         if self.username.text == "admin" and self.password.text == "admin":
             # Set a default admin user object
-            self.current_user = User("Admin", "User", "admin", "admin@email.com", "admin", "01/01/2000", [0, 0], [])
+            self.current_user = User("Admin", "User", "admin", "admin@email.com", "admin", "01/01/2000", [0, 0], user_type="admin")
             App.get_running_app().current_user = self.current_user
             self.parent.current = "map"
         elif self.password.text != "" and check_password(self.username.text, self.password.text):
@@ -110,11 +106,6 @@ class LoginScreen(Screen):
             if not self.current_user:
                 send_notification("Login Error", "User data could not be loaded.")
                 return
-
-            if not self.current_user.squad:             #Only assign a default squad if user doesn't already have one
-                test_squad = Squad("DefaultSquad", 4)   #TODO assigns default squad to all users, doesnt load from DB
-                test_squad.add_member(self.current_user.usern)  # Add the current user to the squad
-                self.current_user.squad = test_squad
 
             App.get_running_app().current_user = self.current_user  # Set app-wide current user
             self.parent.current = "map"
@@ -139,44 +130,41 @@ class SignupScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # Create a grid layout with two rows and one column
-        layout = GridLayout(rows=5)
+        # Main layout
+        main_layout = BoxLayout(orientation='vertical', padding=30, spacing=20)
+        main_layout.size_hint = (0.9, 0.9)
+        main_layout.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
 
-        # Create a label for the app name
-        label = Label(text="Location Sharing App", font_size='20sp')
+        # App name label
+        label = Label(text="Sign Up", font_size='24sp', size_hint=(1, 0.15))
+        main_layout.add_widget(label)
 
         # Create a text input for username
-        self.username = TextInput(hint_text="Username", multiline=False)
+        self.username = TextInput(hint_text="Username", multiline=False, size_hint=(1, 0.12))
+        main_layout.add_widget(self.username)
 
         # Create a text input for password
-        self.password = TextInput(hint_text="Password", password=True, multiline=False)
+        self.password = TextInput(hint_text="Password", password=True, multiline=False, size_hint=(1, 0.12))
+        main_layout.add_widget(self.password)
 
         # Create a text input for email
-        self.email = TextInput(hint_text="Email", multiline=False)
+        self.email = TextInput(hint_text="Email", multiline=False, size_hint=(1, 0.12))
+        main_layout.add_widget(self.email)
 
-        # TODO link the user inout to a creation of a user class instance in user_classes.py
-        # not sure if I should do it before or after the sign up button
-        # current_user = User(firstn, lastn, usern, email, birthday, location)
-        # current_user = User("Liam", "O'Connor", "LOC", "oconnor@gmail.com", "17/02/1996", [200, 200])
-
-        # Create a sign up button
-        signup_btn = Button(text="Sign Up", size_hint=(None, None), size=(100, 50), background_color=buttonColor)
+        # Button row (signup, back) - much smaller buttons
+        button_row = GridLayout(cols=2, size_hint=(1, 0.08), spacing=10)
+        signup_btn = Button(text="Sign Up", background_color=buttonColor, size_hint=(1, 1), font_size='12sp')
         signup_btn.bind(on_press=self.signup)
-
-        # Create a back button
-        back_btn = Button(text="Back", size_hint=(None, None), size=(100, 50), background_color=buttonColor)
+        back_btn = Button(text="Back", background_color=buttonColor, size_hint=(1, 1), font_size='12sp')
         back_btn.bind(on_press=self.back)
+        button_row.add_widget(signup_btn)
+        button_row.add_widget(back_btn)
+        main_layout.add_widget(button_row)
 
-        # Add all widgets to the layout
-        # layout.add_widget(label)
-        layout.add_widget(self.username)
-        layout.add_widget(self.password)
-        layout.add_widget(self.email)
-        layout.add_widget(signup_btn)
-        layout.add_widget(back_btn)
-
-        # Add the layout to the sign up screen
-        self.add_widget(layout)
+        # Center everything
+        container = BoxLayout(orientation='vertical')
+        container.add_widget(main_layout)
+        self.add_widget(container)
 
     # Function to handle sign up button press
     def signup(self, instance):
@@ -224,33 +212,39 @@ class NavMenuScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # Create a grid layout with four rows and one column
-        layout = GridLayout(rows=5)
+        # Main layout
+        self.main_layout = BoxLayout(orientation='vertical', padding=30, spacing=15)
+        self.main_layout.size_hint = (0.8, 0.9)
+        self.main_layout.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
 
-        # Create buttons for each menu option
-        friends_btn = Button(text="Friends", size_hint=(None, None), size=(500, 100), background_color=buttonColor)
-        events_btn = Button(text="Events/Trips", size_hint=(None, None), size=(500, 100), background_color=buttonColor)
-        groups_btn = Button(text="Groups", size_hint=(None, None), size=(500, 100), background_color=buttonColor)
-        profile_btn = Button(text="Profile/Settings", size_hint=(None, None), size=(500, 100),
-                             background_color=buttonColor)
-        back_btn = Button(text="Back", size_hint=(None, None), size=(500, 100), background_color=buttonColor)
-
-        # Bind each button to a function that switches to the corresponding screen
-        friends_btn.bind(on_press=lambda x: self.switch_screen("friends"))
-        events_btn.bind(on_press=lambda x: self.switch_screen("events"))
-        groups_btn.bind(on_press=lambda x: self.switch_screen("groups"))
-        profile_btn.bind(on_press=lambda x: self.switch_screen("profile"))
-        back_btn.bind(on_press=lambda x: self.switch_screen("map"))
-
-        # Add all buttons to the layout
-        layout.add_widget(friends_btn)
-        layout.add_widget(events_btn)
-        layout.add_widget(groups_btn)
-        layout.add_widget(profile_btn)
-        layout.add_widget(back_btn)
-
-        # Add the layout to the navigation menu screen
-        self.add_widget(layout)
+        # Center everything
+        container = BoxLayout(orientation='vertical')
+        container.add_widget(self.main_layout)
+        self.add_widget(container)
+    
+    def on_enter(self):
+        """Called when the screen is entered - rebuild buttons dynamically"""
+        self.main_layout.clear_widgets()
+        
+        # Button list - much smaller buttons
+        button_texts = [
+            ("Friends", "friends"),
+            ("Events/Trips", "events"),
+            ("Groups", "groups"),
+            ("Profile/Settings", "profile"),
+        ]
+        
+        # Add admin button only for admin users
+        app = App.get_running_app()
+        if app and app.current_user and app.current_user.user_type == "admin":
+            button_texts.append(("Admin Settings", "admin"))
+        
+        button_texts.append(("Back", "map"))
+        
+        for text, screen in button_texts:
+            btn = Button(text=text, size_hint=(1, 0.06), background_color=buttonColor, font_size='11sp')
+            btn.bind(on_press=lambda x, s=screen: self.switch_screen(s))
+            self.main_layout.add_widget(btn)
 
     def switch_screen(self, screen_name):
         self.parent.current = screen_name
@@ -269,106 +263,88 @@ class FProfileScreen(Screen):  # friends profile
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # Create a label for the screen
-        label = Label(text="Friend Profile Screen", size_hint=(None, None))
+        # Main layout
+        main_layout = BoxLayout(orientation='vertical', padding=30, spacing=15)
+        main_layout.size_hint = (0.9, 0.95)
+        main_layout.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+
+        # Title label
+        label = Label(text="Friend Profile Screen", font_size='22sp', size_hint=(1, 0.12))
+        main_layout.add_widget(label)
 
         # Load the friends profile image
-        fprofile_image = Image(source="josh.jpg", size_hint=(1, 0.9))
+        fprofile_image = Image(source="josh.jpg", size_hint=(1, 0.6), allow_stretch=True, keep_ratio=True)
+        main_layout.add_widget(fprofile_image)
 
-        # Create a back button
-        back_btn = Button(text="Back", size_hint=(None, None), size=(100, 50))
+        # Back button - much smaller
+        back_btn = Button(text="Back", size_hint=(1, 0.08), font_size='12sp')
         back_btn.bind(on_press=self.back)
+        main_layout.add_widget(back_btn)
 
-        # Create a layout and add widgets
-        layout = BoxLayout(orientation='vertical')
-        layout.add_widget(label)
-        layout.add_widget(back_btn)
-
-        # Add the friend profile image to the layout
-        layout.add_widget(fprofile_image)
-
-        # Add the layout to the events screen
-        self.add_widget(layout)
+        # Center everything
+        container = BoxLayout(orientation='vertical')
+        container.add_widget(main_layout)
+        self.add_widget(container)
 
     # Function to handle back button press
     def back(self, instance):
         # Switch to friends screen
         self.parent.current = "friends"
 
-class FriendsScreen(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        # Create a label for the screen
-        label = Label(text="Friends Screen")
-        # Create a grid layout with four rows and one column
-        layout = GridLayout(rows=4, cols=1)
-
-        # Create buttons for each friend option
-        friend1_btn = Button(text="Friend Name 1", size_hint=(None, None), size=(500, 100))
-        friend2_btn = Button(text="Friend Name 2", size_hint=(None, None), size=(500, 100))
-
-        # Bind each button to a function that switches to the corresponding friend's profile screen
-        friend1_btn.bind(on_press=lambda x: self.switch_screen("Fprofile"))
-        friend2_btn.bind(on_press=lambda x: self.switch_screen("Fprofile"))
-
-        # Add all friend buttons to the layout
-        layout.add_widget(friend1_btn)
-        layout.add_widget(friend2_btn)
-
-        # Create a back button
-        back_btn = Button(text="Back", size_hint=(None, None), size=(100, 50))
-        back_btn.bind(on_press=self.back)
-
-        # Create a layout and add widgets
-        # layout = BoxLayout(orientation='vertical')
-        layout.add_widget(label)
-        layout.add_widget(back_btn)
-
-        # Add the layout to the friends screen
-        self.add_widget(layout)
-
-    def switch_screen(self, screen_name):  # allows the switch screen option, to switch to a user profile of a friend
-        self.parent.current = screen_name
-
-    # Function to handle back button press
-    def back(self, instance):
-        # Switch to map screen
-        self.parent.current = "nav_menu"
-
 # Define events screen
 class EventsScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        # Load events from the database
-        self.event_db = self.load_event_db("eventsDB.txt")
-        self.eventName = None  # Variable to store the selected event
+        # Main layout
+        self.main_layout = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        self.main_layout.size_hint = (0.8, 0.7)
+        self.main_layout.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
 
-        # Create the layout
-        layout = BoxLayout(orientation='vertical', spacing=20, padding=20)
+        # Title label
+        self.label = Label(text="Events", font_size='18sp', size_hint=(1, 0.15))
+        self.main_layout.add_widget(self.label)
 
-        # Create a label for the screen
-        label = Label(text="Events Screen", font_size=24, size_hint=(1, 0.2))
-
-        # Create a dropdown list (Spinner) for event selection
+        # Create a dropdown list (Spinner) for event selection - much smaller
         self.spinner = Spinner(
             text="Select Event",
-            values=list(self.event_db.keys()),
-            size_hint=(1, 0.2)
+            values=[],
+            size_hint=(1, 0.1),
+            font_size='12sp'
         )
         self.spinner.bind(text=self.on_event_select)
+        self.main_layout.add_widget(self.spinner)
 
-        # Back button to navigate to MapScreen
-        back_btn = Button(text="Go to Map", size_hint=(None, None), size=(150, 50))
-        back_btn.bind(on_press=self.go_to_map)
+        # Go to Map button - much smaller
+        map_btn = Button(text="Go to Map", size_hint=(1, 0.08), font_size='12sp')
+        map_btn.bind(on_press=self.go_to_map)
+        self.main_layout.add_widget(map_btn)
 
-        # Add widgets to the layout
-        layout.add_widget(label)
-        layout.add_widget(self.spinner)
-        layout.add_widget(back_btn)
+        # Back button - much smaller
+        back_btn = Button(text="Back to Menu", size_hint=(1, 0.08), font_size='12sp')
+        back_btn.bind(on_press=self.back_to_menu)
+        self.main_layout.add_widget(back_btn)
 
-        self.add_widget(layout)
+        # Center everything
+        container = BoxLayout(orientation='vertical')
+        container.add_widget(self.main_layout)
+        self.add_widget(container)
+        
+        # Initialize event data
+        self.event_db = {}
+        self.eventName = None
+    
+    def on_enter(self):
+        """Called when the screen is entered - reload events dynamically"""
+        self.load_events()
+    
+    def load_events(self):
+        """Load events from the database and update spinner"""
+        self.event_db = self.load_event_db("EventsDB.txt")
+        event_names = list(self.event_db.keys())
+        self.spinner.values = event_names
+        if event_names and self.spinner.text not in event_names:
+            self.spinner.text = "Select Event"
 
     def load_event_db(self, filename):
         """
@@ -378,8 +354,16 @@ class EventsScreen(Screen):
         try:
             with open(filename, "r") as file:
                 for line in file:
-                    event, image = line.strip().split(";")
-                    event_db[event] = image
+                    parts = line.strip().split(";")
+                    if len(parts) >= 11:  # eventID;name;map;start;end;desc;coord1;coord2;coord3;coord4;hidden
+                        event_id = parts[0]
+                        event_name = parts[1]
+                        image = parts[2]
+                        is_hidden = parts[10] == "true"
+                        
+                        # Only show non-hidden events to users
+                        if not is_hidden:
+                            event_db[event_name] = image
         except FileNotFoundError:
             print(f"Error: {filename} not found.")
         return event_db
@@ -396,6 +380,11 @@ class EventsScreen(Screen):
         Switch to the MapScreen and update the map based on the selected eventName.
         """
         if self.eventName:
+            # Set app-wide current event
+            app = App.get_running_app()
+            if app:
+                app.current_event = self.eventName
+            
             # Access the MapScreen instance from the parent ScreenManager
             map_screen = self.parent.get_screen("map")
             map_screen.set_event_name(self.eventName, self.event_db)
@@ -403,6 +392,12 @@ class EventsScreen(Screen):
             self.parent.current = "map"
         else:
             print("Please select an event before proceeding.")
+
+    def back_to_menu(self, instance):
+        """
+        Return to navigation menu.
+        """
+        self.parent.current = "nav_menu"
 
 # Define the screen manager
 sm = ScreenManager(transition=FadeTransition())
@@ -415,14 +410,16 @@ sm.add_widget(NavMenuScreen(name="nav_menu"))
 sm.add_widget(FriendsScreen(name="friends"))
 sm.add_widget(EventsScreen(name="events"))
 sm.add_widget(GroupsScreen(name="groups"))
-sm.add_widget(ProfileScreen( name="profile"))
+sm.add_widget(ProfileScreen(name="profile"))
 sm.add_widget(FProfileScreen(name="Fprofile"))
+sm.add_widget(AdminScreen(name="admin"))
 
 
 class MyApp(App):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.current_user = None  # This gets set after login
+        self.current_event = None  # This gets set when an event is selected
 
     def build(self):
         self.title = 'Festifriends'

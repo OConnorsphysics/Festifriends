@@ -21,26 +21,30 @@ class ProfileScreen(Screen):
         # Title label
         title_label = Label(text="Profile", font_size='24sp', size_hint=(1, 0.1))
 
-        # Create formatted multiline user detail text
-        details_text = f"""
+        # Check if user is logged in
+        if not current_user:
+            details_text = "No user logged in"
+        else:
+            # Create formatted multiline user detail text
+            details_text = f"""
 Name: {current_user.firstn} {current_user.lastn}
 Username: {current_user.usern}
 Email: {current_user.email}
 Birthday: {current_user.birthday}
 Location: {current_user.location}
-Squad: {current_user.squad.name if current_user.squad else "No squad"}
+User Type: {current_user.user_type}
 """
 
         # Label to display user details
-        user_details = Label(text=details_text, halign='left', valign='top')
+        user_details = Label(text=details_text, halign='left', valign='top', size_hint=(1, 0.7))
         user_details.bind(size=user_details.setter('text_size'))  # Ensure text wraps properly
 
         # Create a back button
-        back_btn = Button(text="Back", size_hint=(None, None), size=(100, 50))
+        back_btn = Button(text="Back to Menu", size_hint=(1, 0.08), font_size='12sp')
         back_btn.bind(on_press=self.back)
 
         # Layout
-        layout = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        layout = BoxLayout(orientation='vertical', padding=20, spacing=15)
         layout.add_widget(title_label)
         layout.add_widget(user_details)
         layout.add_widget(back_btn)
@@ -49,5 +53,5 @@ Squad: {current_user.squad.name if current_user.squad else "No squad"}
         self.add_widget(layout)
 
     def back(self, instance):
-        send_notification("Back to Map", "You returned from your profile.")
-        self.parent.current = "map"
+        send_notification("Back to Menu", "You returned from your profile.")
+        self.parent.current = "nav_menu"

@@ -1,0 +1,9 @@
+eventID;meetupName;meetupLocation;meetupDescription;imagePath
+1;Main Stage;600,300;Main festival stage area;redpin.jpg
+1;Food Court;400,200;Central food and beverage area;redpin.jpg
+2;Main Entrance;400,300;Disneyland main entrance;redpin.jpg
+2;Castle;500,400;Sleeping Beauty Castle;redpin.jpg
+3;Main Arena;400,300;Main performance arena;redpin.jpg
+4;Stampede Grounds;400,300;Main stampede grounds entrance;redpin.jpg
+5;Burger Truck;414,653;borger;redpin.jpg
+5;burger;300,333;burgers;redpin.jpg

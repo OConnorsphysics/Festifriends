@@ -1,0 +1,10 @@
+squad_id;user_username;event_name;squad_name;max_members;created_date
+1;loc;Shambhala 2025;OConnorClan;4;2024-01-01
+2;Dix;Shambhala 2025;HorseyCrew3;4;2024-01-01
+3;Jane;Shambhala 2025;OConnorClan;4;2024-01-01
+4;Tom;Shambhala 2025;OConnorClan;4;2024-01-01
+5;Jade;Shambhala 2025;HorseyCrew3;4;2024-01-01
+6;Ray;Shambhala 2025;HorseyCrew3;4;2024-01-01
+7;Torin;Shambhala 2025;HorseyCrew3;4;2024-01-01
+8;Derek;Shambhala 2025;OConnorClan;4;2024-01-01 9;loc;Disneyland;Horsey Crew4;4;2025-07-02
+9;loc;Disneyland;Hcrew;4;2025-07-02

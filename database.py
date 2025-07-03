@@ -7,6 +7,8 @@ def check_password(username, password):
     try:
         with open("UserDB.txt", newline='') as f:
             reader = csv.reader(f, delimiter=';')
+            # Skip header row
+            next(reader, None)
             for row in reader:
                 if row[2].lower() == username.lower() and row[4] == password:
                     return True
@@ -19,6 +21,8 @@ def set_current_user(username):
     try:
         with open("UserDB.txt", newline='') as f:
             reader = csv.reader(f, delimiter=';')
+            # Skip header row
+            next(reader, None)
             for row in reader:
                 print("Checking row:", row[2])  #debug line TODO remove once this works %100
                 if row[2].lower() == username.lower():
@@ -27,9 +31,9 @@ def set_current_user(username):
                     loc_string = row[6].strip("[]")
                     location = [int(val.strip()) for val in loc_string.split(",")]
                     print("Raw friend list:", row[7])
-                    friendList = ast.literal_eval(row[7]) if row[7] else []
-                    squad_name = str(row[8]).strip() if len(row) > 8 and row[8].strip() != "" else None
+                    user_type = str(row[9]).strip() if len(row) > 9 and row[9].strip() != "" else "free"
 
+                    # Create user with updated constructor (no friendList parameter)
                     user = User(
                         firstn=row[0],
                         lastn=row[1],
@@ -38,14 +42,8 @@ def set_current_user(username):
                         password=row[4],
                         birthday=row[5],
                         location=location,
-                        friendList=friendList
+                        user_type=user_type
                     )
-
-                    if squad_name:
-                        print("Creating squad with name:", squad_name)
-                        squad = Squad(squad_name, max_members=4)
-                        squad.add_member(user.usern)
-                        user.squad = squad
 
                     return user
 
@@ -65,4 +63,4 @@ if __name__ == '__main__':
     print("Password check:", check_password(testusername, testpass))
     user = set_current_user(testusername)
     if user:
-        print(f"Loaded user: {user.firstn} {user.lastn}, Birthday: {user.birthday}, Squad: {user.squad.name if user.squad else 'None'}")
+        print(f"Loaded user: {user.firstn} {user.lastn}, Birthday: {user.birthday}, User Type: {user.user_type}")

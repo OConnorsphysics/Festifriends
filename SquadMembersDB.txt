@@ -1,0 +1,16 @@
+squad_id;member_username
+1;loc
+1;Jane
+1;Tom
+1;Derek
+2;Dix
+2;Jade
+2;Ray
+2;Torin
+3;Jane
+4;Tom
+5;Jade
+6;Ray
+7;Torin
+8;Derek 9;Dix
+9;Tom
