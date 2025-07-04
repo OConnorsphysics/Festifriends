@@ -42,6 +42,15 @@ squad_id;x_coordinate;y_coordinate
 ...
 ```
 
+### 5. EventsMeetupDB.txt
+Stores event-wide meetup points created by admins.
+```
+event_id;meetup_name;location;description;icon_path
+1;Food Court;400,300;Main food area;food_icon.png
+1;Medical Tent;500,400;First aid station;medical_icon.png
+...
+```
+
 ## Key Features
 
 ### Friends System

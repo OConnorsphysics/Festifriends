@@ -14,3 +14,7 @@ squad_id;member_username
 7;Torin
 8;Derek 9;Dix
 9;Tom
+10;Tom
+10;Ray
+10;Jane
+10;Dix

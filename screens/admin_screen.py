@@ -7,7 +7,7 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.popup import Popup
 from kivy.uix.spinner import Spinner
-import pandas as pd
+import csv
 import os
 
 class AdminScreen(Screen):
@@ -120,15 +120,15 @@ class AdminScreen(Screen):
         content = BoxLayout(orientation='vertical', padding=20, spacing=10)
         
         # Event name input
-        name_input = TextInput(hint_text="Event Name", multiline=False, size_hint=(1, 0.2))
+        name_input = TextInput(hint_text="Event Name", multiline=False, size_hint=(1, 0.15))
         content.add_widget(name_input)
         
         # Map file input
-        map_input = TextInput(hint_text="Map Image File (e.g., shambMap2023.PNG)", multiline=False, size_hint=(1, 0.2))
+        map_input = TextInput(hint_text="Map Image File (e.g., shambMap2023.PNG)", multiline=False, size_hint=(1, 0.15))
         content.add_widget(map_input)
         
         # Date range inputs
-        date_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
+        date_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.15))
         start_date = TextInput(hint_text="Start Date (MM/DD/YYYY)", multiline=False, size_hint=(0.5, 1))
         end_date = TextInput(hint_text="End Date (MM/DD/YYYY)", multiline=False, size_hint=(0.5, 1))
         date_layout.add_widget(start_date)
@@ -136,8 +136,12 @@ class AdminScreen(Screen):
         content.add_widget(date_layout)
         
         # Description input
-        desc_input = TextInput(hint_text="Event Description", multiline=True, size_hint=(1, 0.3))
+        desc_input = TextInput(hint_text="Event Description", multiline=True, size_hint=(1, 0.2))
         content.add_widget(desc_input)
+        
+        # Pixel to Meter input
+        pixel_to_meter_input = TextInput(text="0.5", hint_text="Pixel to Meter (e.g., 0.5)", multiline=False, size_hint=(1, 0.15))
+        content.add_widget(pixel_to_meter_input)
         
         # Buttons
         button_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.2))
@@ -146,12 +150,18 @@ class AdminScreen(Screen):
         
         def save_event(instance):
             if name_input.text and map_input.text:
+                try:
+                    pixel_to_meter = float(pixel_to_meter_input.text)
+                except ValueError:
+                    pixel_to_meter = 0.5  # Default value
+                
                 self.add_event(
                     name_input.text,
                     map_input.text,
                     start_date.text,
                     end_date.text,
-                    desc_input.text
+                    desc_input.text,
+                    pixel_to_meter
                 )
                 popup.dismiss()
                 self.load_events()
@@ -166,14 +176,14 @@ class AdminScreen(Screen):
         popup = Popup(title="Add New Event", content=content, size_hint=(0.8, 0.8))
         popup.open()
     
-    def add_event(self, name, map_file, start_date, end_date, description):
+    def add_event(self, name, map_file, start_date, end_date, description, pixel_to_meter):
         """Add a new event to EventsDB.txt"""
         try:
             # Generate new event ID
             next_id = self.get_next_event_id()
             
             # Create the extended event entry with ID and hidden status
-            event_line = f"{next_id};{name};{map_file};{start_date};{end_date};{description};0,0;800,0;800,600;0,600;false\n"
+            event_line = f"{next_id};{name};{map_file};{start_date};{end_date};{description};{pixel_to_meter};0,0;800,0;800,600;0,600;false\n"
             
             with open("EventsDB.txt", "a") as file:
                 file.write(event_line)
@@ -230,6 +240,10 @@ class AdminScreen(Screen):
         # Description input
         desc_input = TextInput(text=event_data['description'], hint_text="Event Description", multiline=True, size_hint=(1, 0.2))
         content.add_widget(desc_input)
+
+        # Pixel to Meter input      
+        pixel_to_meter_input = TextInput(text=event_data['pixel_to_meter'], hint_text="Pixel to Meter", multiline=False, size_hint=(1, 0.1))
+        content.add_widget(pixel_to_meter_input)
         
         # Hidden status
         hidden_layout = BoxLayout(orientation='horizontal', size_hint=(1, 0.1))
@@ -248,10 +262,16 @@ class AdminScreen(Screen):
             if not self.validate_event_inputs(name_input.text, start_date.text, end_date.text):
                 return
             
+            # Get pixel to meter value
+            try:
+                pixel_to_meter = float(pixel_to_meter_input.text)
+            except ValueError:
+                pixel_to_meter = 0.5  # Default value
+            
             # Show confirmation popup
             self.show_edit_confirmation(
                 event_id, name_input.text, map_input.text, start_date.text, 
-                end_date.text, desc_input.text, hidden_spinner.text == "Yes",
+                end_date.text, desc_input.text, pixel_to_meter, hidden_spinner.text == "Yes",
                 event_data  # Original data for revert
             )
             popup.dismiss()
@@ -273,18 +293,19 @@ class AdminScreen(Screen):
                 with open("EventsDB.txt", "r") as file:
                     for line in file:
                         parts = line.strip().split(";")
-                        if len(parts) >= 11 and parts[0] == str(event_id):
+                        if len(parts) >= 12 and parts[0] == str(event_id):
                             return {
                                 'name': parts[1],
                                 'map_file': parts[2],
                                 'start_date': parts[3],
                                 'end_date': parts[4],
                                 'description': parts[5],
-                                'coord1': parts[6],
-                                'coord2': parts[7],
-                                'coord3': parts[8],
-                                'coord4': parts[9],
-                                'hidden': parts[10] == "true"
+                                'pixel_to_meter': parts[6],
+                                'coord1': parts[7],
+                                'coord2': parts[8],
+                                'coord3': parts[9],
+                                'coord4': parts[10],
+                                'hidden': parts[11] == "true"
                             }
             return None
         except Exception as e:
@@ -306,7 +327,7 @@ class AdminScreen(Screen):
         
         return True
     
-    def show_edit_confirmation(self, event_id, name, map_file, start_date, end_date, description, hidden, original_data):
+    def show_edit_confirmation(self, event_id, name, map_file, start_date, end_date, description, pixel_to_meter, hidden, original_data):
         """Show confirmation popup for edit changes"""
         content = BoxLayout(orientation='vertical', padding=20, spacing=10)
         
@@ -322,6 +343,8 @@ class AdminScreen(Screen):
             changes.append(f"Start: {original_data['start_date']} → {start_date}")
         if end_date != original_data['end_date']:
             changes.append(f"End: {original_data['end_date']} → {end_date}")
+        if pixel_to_meter != original_data['pixel_to_meter']:
+            changes.append(f"Pixel to Meter: {original_data['pixel_to_meter']} → {pixel_to_meter}")
         if hidden != original_data['hidden']:
             changes.append(f"Hidden: {'Yes' if original_data['hidden'] else 'No'} → {'Yes' if hidden else 'No'}")
         
@@ -337,14 +360,14 @@ class AdminScreen(Screen):
         revert_btn = Button(text="Revert Changes", size_hint=(0.5, 1))
         
         def confirm_changes(instance):
-            self.save_event_changes(event_id, name, map_file, start_date, end_date, description, hidden)
+            self.save_event_changes(event_id, name, map_file, start_date, end_date, description, pixel_to_meter, hidden)
             confirmation_popup.dismiss()
         
         def revert_changes(instance):
             # Revert to original data
             self.save_event_changes(event_id, original_data['name'], original_data['map_file'], 
                                   original_data['start_date'], original_data['end_date'], 
-                                  original_data['description'], original_data['hidden'])
+                                  original_data['description'], original_data['pixel_to_meter'], original_data['hidden'])
             confirmation_popup.dismiss()
         
         confirm_btn.bind(on_press=confirm_changes)
@@ -430,8 +453,8 @@ class AdminScreen(Screen):
             if not event_id:
                 return
             
-            if os.path.exists("MeetupDB.txt"):
-                with open("MeetupDB.txt", "r") as file:
+            if os.path.exists("EventsMeetupDB.txt"):
+                with open("EventsMeetupDB.txt", "r") as file:
                     for line in file:
                         parts = line.strip().split(";")
                         if len(parts) >= 5 and parts[0] == str(event_id):
@@ -523,7 +546,7 @@ class AdminScreen(Screen):
                     return
                 
                 meetup_line = f"{event_id};{name};{location_str};{description};{icon_path}\n"
-                with open("MeetupDB.txt", "a") as file:
+                with open("EventsMeetupDB.txt", "a") as file:
                     file.write(meetup_line)
                 print(f"Added meetup: {name} with icon: {icon_path}")
                 add_popup.dismiss()
@@ -544,10 +567,10 @@ class AdminScreen(Screen):
     def delete_meetup_point(self, event_id, meetup_name):
         """Delete a meetup point"""
         try:
-            with open("MeetupDB.txt", "r") as file:
+            with open("EventsMeetupDB.txt", "r") as file:
                 lines = file.readlines()
             
-            with open("MeetupDB.txt", "w") as file:
+            with open("EventsMeetupDB.txt", "w") as file:
                 for line in lines:
                     parts = line.strip().split(";")
                     if len(parts) >= 2 and not (parts[0] == str(event_id) and parts[1] == meetup_name):
@@ -574,7 +597,7 @@ class AdminScreen(Screen):
             print(f"Error getting event name: {e}")
         return None
     
-    def save_event_changes(self, event_id, name, map_file, start_date, end_date, description, hidden):
+    def save_event_changes(self, event_id, name, map_file, start_date, end_date, description, pixel_to_meter, hidden):
         """Save event changes to EventsDB.txt"""
         try:
             # Read all events
@@ -585,9 +608,9 @@ class AdminScreen(Screen):
             with open("EventsDB.txt", "w") as file:
                 for line in lines:
                     parts = line.strip().split(";")
-                    if len(parts) >= 11 and parts[0] == str(event_id):
-                        # Update the event line
-                        updated_line = f"{event_id};{name};{map_file};{start_date};{end_date};{description};{parts[6]};{parts[7]};{parts[8]};{parts[9]};{str(hidden).lower()}\n"
+                    if len(parts) >= 12 and parts[0] == str(event_id):
+                        # Update the event line with pixel to meter
+                        updated_line = f"{event_id};{name};{map_file};{start_date};{end_date};{description};{pixel_to_meter};{parts[7]};{parts[8]};{parts[9]};{parts[10]};{str(hidden).lower()}\n"
                         file.write(updated_line)
                     else:
                         file.write(line)
@@ -622,11 +645,11 @@ class AdminScreen(Screen):
     def delete_event_meetups(self, event_id):
         """Delete all meetup points for an event"""
         try:
-            if os.path.exists("MeetupDB.txt"):
-                with open("MeetupDB.txt", "r") as file:
+            if os.path.exists("EventsMeetupDB.txt"):
+                with open("EventsMeetupDB.txt", "r") as file:
                     lines = file.readlines()
                 
-                with open("MeetupDB.txt", "w") as file:
+                with open("EventsMeetupDB.txt", "w") as file:
                     for line in lines:
                         parts = line.strip().split(";")
                         if len(parts) >= 1 and parts[0] != str(event_id):

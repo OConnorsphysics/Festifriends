@@ -19,6 +19,9 @@ from kivy.core.window import Window
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.floatlayout import FloatLayout
 import os
+from screens.find_member_popup import FindMemberPopup
+from kivy.uix.popup import Popup
+from kivy.uix.spinner import Spinner
 
 
 class MapScreen(Screen):
@@ -91,6 +94,15 @@ class MapScreen(Screen):
         )
         self.event_pins_button.bind(on_press=self.toggle_event_pins)
         self.button_container.add_widget(self.event_pins_button)
+        
+        # Find squad member button
+        self.find_member_button = Button(
+            text="Find squad member",
+            size_hint=(1, 1),
+            font_size='14sp'
+        )
+        self.find_member_button.bind(on_press=self.open_find_member_popup)
+        self.button_container.add_widget(self.find_member_button)
         
         # Logout button
         self.logout_button = Button(
@@ -371,7 +383,7 @@ class MapScreen(Screen):
         print(f"GPS status update: {stype} - {status}")
 
     def load_event_meetup_pins(self):
-        """Load meetup pins for the current event from MeetupDB.txt"""
+        """Load meetup pins for the current event from EventsMeetupDB.txt"""
         if not self.eventName or not self.map_image:
             return
         
@@ -384,8 +396,8 @@ class MapScreen(Screen):
             if not event_id:
                 return
             
-            # Load meetup points from MeetupDB.txt
-            with open("MeetupDB.txt", "r") as file:
+            # Load meetup points from EventsMeetupDB.txt
+            with open("EventsMeetupDB.txt", "r") as file:
                 for line in file:
                     parts = line.strip().split(";")
                     if len(parts) >= 5 and parts[0] == str(event_id):
@@ -400,6 +412,9 @@ class MapScreen(Screen):
                             self.add_meetup_pin(meetup_name, (x, y), description, image_path)
                         except ValueError:
                             print(f"Invalid location format for {meetup_name}: {location_str}")
+            
+            # Also load squad meetup locations
+            self.load_squad_meetup_locations()
                             
         except Exception as e:
             print(f"Error loading meetup pins: {e}")
@@ -498,4 +513,139 @@ class MapScreen(Screen):
         
         # Return to login screen
         self.switch_screen("login")
+
+    def open_find_member_popup(self, instance):
+        """
+        Open a popup with a dropdown of the current squad list. On selection, open FindMemberPopup.
+        """
+        # Get current squad members (simulate: use FriendsDB.txt for now, or adapt if you have squad info)
+        app = App.get_running_app()
+        current_user = app.current_user if app else None
+        squad_members = []
+        if current_user:
+            # Try to get squad members from SquadMembersDB.txt for the current event/squad
+            try:
+                # Find current event and user's squad(s)
+                event_name = getattr(app, 'current_event', None)
+                squad_id = None
+                if event_name and os.path.exists("SquadsDB.txt"):
+                    with open("SquadsDB.txt", "r") as f:
+                        for line in f:
+                            parts = line.strip().split(";")
+                            if len(parts) >= 4 and parts[1] == current_user.usern and parts[2] == event_name:
+                                squad_id = parts[0]
+                                break
+                if squad_id and os.path.exists("SquadMembersDB.txt"):
+                    with open("SquadMembersDB.txt", "r") as f:
+                        for line in f:
+                            parts = line.strip().split(";")
+                            if len(parts) >= 2 and parts[0] == squad_id:
+                                squad_members.append(parts[1])
+            except Exception as e:
+                print(f"Error loading squad members for find member popup: {e}")
+        if not squad_members:
+            squad_members = ["No squad members"]
+        # Popup content
+        content = BoxLayout(orientation='vertical', padding=20, spacing=10)
+        spinner = Spinner(text="Select member", values=squad_members, size_hint=(1, 0.5))
+        content.add_widget(spinner)
+        select_btn = Button(text="Select", size_hint=(1, 0.3))
+        cancel_btn = Button(text="Cancel", size_hint=(1, 0.3))
+        popup = Popup(title="Find Squad Member", content=content, size_hint=(0.6, 0.4))
+        def on_select(instance):
+            if spinner.text != "No squad members" and spinner.text != "Select member":
+                FindMemberPopup(member_name=spinner.text).open()
+                popup.dismiss()
+        select_btn.bind(on_press=on_select)
+        cancel_btn.bind(on_press=popup.dismiss)
+        btn_row = BoxLayout(orientation='horizontal', size_hint=(1, 0.3), spacing=10)
+        btn_row.add_widget(select_btn)
+        btn_row.add_widget(cancel_btn)
+        content.add_widget(btn_row)
+        popup.open()
+
+    def load_squad_meetup_locations(self):
+        """Load squad meetup locations from SquadMeetupLocationsDB.txt"""
+        if not self.eventName or not self.map_image:
+            return
+        
+        try:
+            app = App.get_running_app()
+            if not app or not app.current_user:
+                return
+            
+            current_user = app.current_user
+            
+            # Get user's squads for current event
+            user_squads = self.get_user_squads_for_event(current_user.usern, self.eventName)
+            
+            # Load squad meetup locations
+            if os.path.exists("SquadMeetupLocationsDB.txt"):
+                with open("SquadMeetupLocationsDB.txt", "r") as file:
+                    for line in file:
+                        parts = line.strip().split(";")
+                        if len(parts) >= 3:
+                            squad_id = parts[0]
+                            x = int(parts[1])
+                            y = int(parts[2])
+                            
+                            # Only show meetup locations for user's squads
+                            if squad_id in user_squads:
+                                squad_name = user_squads[squad_id]
+                                self.add_squad_meetup_location(squad_name, (x, y))
+                                
+        except Exception as e:
+            print(f"Error loading squad meetup locations: {e}")
+    
+    def get_user_squads_for_event(self, username, event_name):
+        """Get user's squads for a specific event"""
+        squads = {}
+        try:
+            if os.path.exists("SquadsDB.txt"):
+                with open("SquadsDB.txt", "r") as file:
+                    for line in file:
+                        parts = line.strip().split(";")
+                        if len(parts) >= 4 and parts[1] == username and parts[2] == event_name:
+                            squad_id = parts[0]
+                            squad_name = parts[3]
+                            squads[squad_id] = squad_name
+        except Exception as e:
+            print(f"Error loading user squads: {e}")
+        return squads
+    
+    def add_squad_meetup_location(self, squad_name, location):
+        """Add a squad meetup location to the map"""
+        if not self.map_image:
+            return
+        
+        try:
+            from kivy.graphics import Color, Ellipse
+            
+            # Create instruction group for this meetup location
+            meetup_group = InstructionGroup()
+            
+            # Add blue circle for squad meetup location
+            meetup_group.add(Color(0, 0, 1, 1))  # Blue color
+            meetup_group.add(Ellipse(pos=location, size=(25, 25)))
+            
+            # Store the meetup group
+            meetup_key = f"squad_meetup_{squad_name}_{location[0]}_{location[1]}"
+            self.meetup_pins[meetup_key] = {
+                "group": meetup_group,
+                "name": f"{squad_name} Meetup",
+                "description": f"Squad meetup location for {squad_name}",
+                "location": location,
+                "image_path": "squad_meetup"
+            }
+            
+            # Add to canvas if pins are visible
+            if self.show_event_pins:
+                self.map_image.canvas.add(meetup_group)
+                
+        except Exception as e:
+            print(f"Error adding squad meetup location {squad_name}: {e}")
+    
+    def refresh_meetup_locations(self):
+        """Refresh meetup locations - called when returning from group screen"""
+        self.load_event_meetup_pins()
 

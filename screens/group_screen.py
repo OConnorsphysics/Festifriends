@@ -11,6 +11,7 @@ from user_classes import Squad
 from kivy.app import App
 import os
 from datetime import datetime
+from screens.find_member_popup import FindMemberPopup
 
 
 # Define groups screen
@@ -259,7 +260,7 @@ class GroupsScreen(Screen):
             member_row = BoxLayout(orientation='horizontal', size_hint_y=None, height=50, spacing=10)
             
             # Member info
-            info_layout = BoxLayout(orientation='vertical', size_hint=(0.8, 1))
+            info_layout = BoxLayout(orientation='vertical', size_hint=(0.6, 1))
             name_label = Label(
                 text=member_name, 
                 font_size='14sp',
@@ -278,14 +279,24 @@ class GroupsScreen(Screen):
             # Remove button
             remove_btn = Button(
                 text="Remove", 
-                size_hint=(0.2, 1),
+                size_hint=(0.15, 1),
                 background_color=(0.8, 0.2, 0.2, 1),
                 font_size='10sp'
             )
             remove_btn.bind(on_press=lambda x, username=member_username: self.remove_member(username))
+
+            # Find Me button
+            find_me_btn = Button(
+                text="Find Me",
+                size_hint=(0.15, 1),
+                background_color=(0.2, 0.6, 1, 1),
+                font_size='10sp'
+            )
+            find_me_btn.bind(on_press=lambda x, username=member_username: FindMemberPopup(member_name=username).open())
             
             member_row.add_widget(info_layout)
             member_row.add_widget(remove_btn)
+            member_row.add_widget(find_me_btn)
             self.members_layout.add_widget(member_row)
 
     def get_squad_members(self, squad_id):
@@ -493,6 +504,11 @@ class GroupsScreen(Screen):
             # Save meetup location to database
             if self.save_meetup_location(self.current_squad_id, x, y):
                 self.show_success_popup(f"Meetup location set to: ({x}, {y})")
+                
+                # Refresh meetup locations on map screen immediately
+                map_screen = self.parent.get_screen("map")
+                if hasattr(map_screen, 'refresh_meetup_locations'):
+                    map_screen.refresh_meetup_locations()
             else:
                 self.show_error_popup("Failed to save meetup location")
                 
@@ -543,4 +559,9 @@ class GroupsScreen(Screen):
 
     def back_to_menu(self, instance):
         """Return to navigation menu"""
+        # Refresh meetup locations on map screen before returning
+        map_screen = self.parent.get_screen("map")
+        if hasattr(map_screen, 'refresh_meetup_locations'):
+            map_screen.refresh_meetup_locations()
+        
         self.parent.current = "nav_menu"

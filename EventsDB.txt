@@ -1,5 +1,5 @@
-1;Shambhala;shambMap2023.PNG;08/15/2024;08/22/2024;Annual electronic music festival in the mountains;0,0;800,0;800,600;0,600;true
-2;Disneyland;disney.jpg;01/01/2024;12/31/2024;The happiest place on earth;0,0;800,0;800,600;0,600;false
-3;Enmax;enmaxcenter.PNG;01/01/2024;12/31/2024;Calgary's premier entertainment venue;0,0;800,0;800,600;0,600;false
-4;Stampede;stampede map.jpg;07/05/2024;07/14/2024;Calgary Stampede - The Greatest Outdoor Show on Earth;0,0;800,0;800,600;0,600;false
-5;Shambhala 2025;shambMap2023.png;08/25/2025;08/31/2025;shmbhala 2025 woohooo;0,0;800,0;800,600;0,600;false
+1;Shambhala;shambMap2023.PNG;08/15/2024;08/22/2024;Annual electronic music festival in the mountains;0.5;0,0;800,0;800,600;0,600;true
+2;Disneyland;disney.jpg;01/01/2024;12/31/2024;The happiest place on earth;0.3;0,0;800,0;800,600;0,600;false
+3;Enmax;enmaxcenter.PNG;01/01/2024;12/31/2024;Calgary's premier entertainment venue;0.4;0,0;800,0;800,600;0,600;false
+4;Stampede;stampede map.jpg;07/05/2024;07/14/2024;Calgary Stampede - The Greatest Outdoor Show on Earth;0.6;0,0;800,0;800,600;0,600;false
+5;Shambhala 2025;shambMap2023.png;08/25/2025;08/31/2025;shmbhala 2025 woohooo;0.5;0,0;800,0;800,600;0,600;false

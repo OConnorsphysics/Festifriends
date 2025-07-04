@@ -1,7 +1,8 @@
 # Import necessary modules
 import kivy
 import time
-import pandas as pd
+import csv
+import os
 from kivy.app import App
 from kivy.uix.button import Button
 from kivy.uix.image import Image
@@ -30,20 +31,55 @@ from kivy.uix.screenmanager import FadeTransition
 from user_classes import User, Squad
 from Utilities.Notifications import send_notification  # Adjust path as needed
 
-# Set size and orientation of the app window
-Config.set('graphics', 'width', '400')
-Config.set('graphics', 'height', '600')
-Window.size = (800, 600)
-# Window.clearcolor = (1, 1, 1, 1)
-Window.clearcolor = (0.7, 0.1, 0.9, 0.9)
+# Mobile-friendly configuration - removed desktop-specific settings
 purple = (0.8, 0, 0.6, 0.7)
 buttonColor = purple  # variable to quickly change general button colours
 
-UserDB = pd.read_csv("UserDB.txt", sep=";", header=None,
-                     names=["firstn", "lastn", "usern", "email", "password", "birthday", "location", "friendList"])
+# Load user database using built-in CSV instead of pandas
+def load_user_db():
+    """Load user database using built-in CSV module"""
+    user_data = []
+    try:
+        if os.path.exists("UserDB.txt"):
+            with open("UserDB.txt", newline='', encoding='utf-8') as f:
+                reader = csv.reader(f, delimiter=';')
+                for row in reader:
+                    if len(row) >= 8:  # Ensure we have enough columns
+                        user_data.append({
+                            "firstn": row[0],
+                            "lastn": row[1], 
+                            "usern": row[2],
+                            "email": row[3],
+                            "password": row[4],
+                            "birthday": row[5],
+                            "location": row[6],
+                            "friendList": row[7] if len(row) > 7 else ""
+                        })
+    except Exception as e:
+        print(f"Error loading UserDB: {e}")
+    return user_data
 
-EventDB = pd.read_csv("EventsDB.txt", sep=";", header=None,
-                     names=["eventName", "mapFile"])
+# Load event database using built-in CSV instead of pandas
+def load_event_db():
+    """Load event database using built-in CSV module"""
+    event_data = []
+    try:
+        if os.path.exists("EventsDB.txt"):
+            with open("EventsDB.txt", newline='', encoding='utf-8') as f:
+                reader = csv.reader(f, delimiter=';')
+                for row in reader:
+                    if len(row) >= 2:  # Ensure we have at least event name and map file
+                        event_data.append({
+                            "eventName": row[1],
+                            "mapFile": row[2] if len(row) > 2 else ""
+                        })
+    except Exception as e:
+        print(f"Error loading EventsDB: {e}")
+    return event_data
+
+# Load databases
+UserDB = load_user_db()
+EventDB = load_event_db()
 eventName = "Shambhala" #hardcoded variable for event name to help dynamically change the map image
 
 current_user = set_current_user("username") #set a null user so the variable/object is defined outside the LoginScreen Class, can avoid somehow?
@@ -172,26 +208,29 @@ class SignupScreen(Screen):
         # If valid, switch to map screen
         # Otherwise, display an error message
         if self.username.text != "" and self.password.text != "" and "@" in self.email.text:
-            if (self.username.text in UserDB['usern'].unique()) == False:  # only works if username is not in "UserDB.txt"
+            # Check if username already exists using the new CSV data structure
+            usernames = [user["usern"] for user in UserDB]
+            emails = [user["email"] for user in UserDB]
+            
+            if self.username.text not in usernames:  # Username is available
                 # Display confirmation message
                 confirmation_label = Label(text="Sign up successful!", color=(0, 1, 0, 1))
                 self.add_widget(confirmation_label)
                 # Schedule function to remove the confirmation message after 5 seconds
                 Clock.schedule_once(lambda dt: self.remove_widget(confirmation_label), 5)
-                # Pause for 3 seconds
-                time.sleep(3)
-                self.parent.current = "map"
+                # Schedule navigation to map screen after 3 seconds (non-blocking)
+                Clock.schedule_once(lambda dt: self.navigate_to_map(), 3)
 
-            elif (self.username.text in UserDB['usern'].unique()) == True:
+            elif self.username.text in usernames:
                 error_usern = Label(text="Username Taken", color=(1, 0, 0, 1))
                 self.add_widget(error_usern)
-                # Schedule function to remove the error message after 5 seconds
+                # Schedule function to remove the error message after 3 seconds
                 Clock.schedule_once(lambda dt: self.remove_widget(error_usern), 3)
 
-            elif (self.email.text in UserDB['email'].unique()) == True:  # TODO user can sign up with existing email, fix
+            elif self.email.text in emails:  # Email already exists
                 error_email = Label(text="An account with this email already exists", color=(1, 0, 0, 1))
                 self.add_widget(error_email)
-                # Schedule function to remove the error message after 5 seconds
+                # Schedule function to remove the error message after 3 seconds
                 Clock.schedule_once(lambda dt: self.remove_widget(error_email), 3)
 
         else:
@@ -200,8 +239,12 @@ class SignupScreen(Screen):
             self.email.text = ""
             error_label = Label(text="Please enter valid username, password, and email", color=(1, 0, 0, 1))
             self.add_widget(error_label)
-            # Schedule function to remove the error message after 5 seconds
+            # Schedule function to remove the error message after 3 seconds
             Clock.schedule_once(lambda dt: self.remove_widget(error_label), 3)
+    
+    def navigate_to_map(self):
+        """Navigate to map screen - called by Clock.schedule_once to avoid blocking"""
+        self.parent.current = "map"
 
     # Function to handle back button press
     def back(self, instance):
@@ -355,11 +398,11 @@ class EventsScreen(Screen):
             with open(filename, "r") as file:
                 for line in file:
                     parts = line.strip().split(";")
-                    if len(parts) >= 11:  # eventID;name;map;start;end;desc;coord1;coord2;coord3;coord4;hidden
+                    if len(parts) >= 12:  # eventID;name;map;start;end;desc;pixel_to_meter;coord1;coord2;coord3;coord4;hidden
                         event_id = parts[0]
                         event_name = parts[1]
                         image = parts[2]
-                        is_hidden = parts[10] == "true"
+                        is_hidden = parts[11] == "true"
                         
                         # Only show non-hidden events to users
                         if not is_hidden:
